@@ -1,0 +1,10 @@
+groq
+langchain-groq
+langgraph
+langchain-mcp-adapters
+tavily-python
+gradio
+langsmith
+python-dotenv
+mcp
+httpx
