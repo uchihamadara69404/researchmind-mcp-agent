@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langchain_mcp_adapters.client import MultiServerMCPClient
-from langgraph.prebuilt import create_react_agent
+import warnings; warnings.filterwarnings("ignore"); from langgraph.prebuilt import create_react_agent
 
 load_dotenv()
 
@@ -24,20 +24,26 @@ async def run_agent(topic: str):
             "command": "python3",
             "args": ["src/mcp_server.py"],
             "transport": "stdio",
+            "env": {
+                **dict(os.environ),
+                "TAVILY_API_KEY": os.getenv("TAVILY_API_KEY", ""),
+                "GROQ_API_KEY": os.getenv("GROQ_API_KEY", ""),
+                "LANGSMITH_API_KEY": os.getenv("LANGSMITH_API_KEY", ""),
+            }
         }
     })
 
     tools = await client.get_tools()
 
     llm = ChatGroq(
-        model="llama-3.3-70b-versatile",
+        model="llama-3.1-8b-instant",
         api_key=os.getenv("GROQ_API_KEY"),
         temperature=0.1
     )
 
     agent = create_react_agent(llm, tools, prompt=SYSTEM_PROMPT)
 
-    print(f"\n Meridian starting research on: {topic}\n")
+    print(f"\n🔍 Meridian researching: {topic}\n")
     print("=" * 50)
 
     result = await agent.ainvoke({
@@ -50,4 +56,4 @@ async def run_agent(topic: str):
 if __name__ == "__main__":
     topic = input("Enter research topic: ")
     result = asyncio.run(run_agent(topic))
-    print("\n" + result)
+    print("\n" + "="*50 + "\n" + result + "\n" + "="*50)
